@@ -23,15 +23,43 @@
 //----------------------------------------------------------------------------------
 typedef struct tile_st {
    bool isFilled;
-   bool isModifiable;
-   int correctDigit;
    int digit;
-   Vector2 position;
 } sudokuTile;
 
 //----------------------------------------------------------------------------------
 // Functions
 //----------------------------------------------------------------------------------
+
+bool isNotOnLine (int d, sudokuTile sudoTile[WIDTH][HEIGHT], int i){
+    for (int j = 0; j < HEIGHT; j++){ // Fixes which row of the grid is tested, varies the column number in order to test every single tile of the row
+        if (sudoTile[i][j].digit == d){
+            return false;
+        }
+    }
+    return true;
+}
+
+bool isNotOnColumn(int d, sudokuTile sudoTile[WIDTH][HEIGHT], int j){
+    for (int i = 0; i < WIDTH; i++){ // Fixes which column of the grid is tested, varies the row number in order to test every single tile of the column
+        if (sudoTile[i][j].digit == d){
+            return false;
+        }
+    }
+    return true;
+}
+
+bool isNotinBox(int d, sudokuTile sudoTile[WIDTH][HEIGHT], int i, int j){
+    int i_box = i - (i % 3), j_box = j - (j % 3); // Identifies in which box the tested tile is, using modulos on its coordinates
+    for (i = i_box; i < i_box + WIDTH/3; i++){ // Checks in the box (which is a 3x3-sized square, hence the ranges for both width and height) if the value of the selected digit already exists there
+        for (j = j_box; j < j_box + HEIGHT/3; j++){
+            if(sudoTile[i][j].digit == d){
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
 
 
 int main(void)
@@ -43,7 +71,8 @@ int main(void)
 
     InitWindow(screenWidth, screenHeight, "Sudoku");
     
-        int grille[9][9] =
+        sudokuTile sudokuGrid[WIDTH][HEIGHT];
+        int grille[WIDTH][HEIGHT] = 
     {
         {9,0,0,1,0,0,0,0,5},
         {0,0,5,0,9,0,2,0,1},
@@ -55,7 +84,12 @@ int main(void)
         {0,0,0,2,0,0,9,0,0},
         {0,0,1,9,0,4,5,7,0}
     };
-
+    for (unsigned int i = 0; i < WIDTH; i++){
+        for (unsigned int j = 0; j < HEIGHT; j++){
+            sudokuGrid[i][j].digit = grille[i][j];
+        }
+    }
+    
     SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
     //--------------------------------------------------------------------------------------
 
@@ -72,17 +106,16 @@ int main(void)
         BeginDrawing();
 
             ClearBackground(RAYWHITE);
-            for(unsigned int i = 0; i < 10; i++){
-                for(unsigned int j = 0; j < 10; j++){
+            for(unsigned int i = 0; i < HEIGHT + 1; i++){
+                for(unsigned int j = 0; j < WIDTH + 1; j++){
                     Color linesColor;
                     if (j % 3 == 0) {linesColor = BLACK;}
                         else {linesColor = LIGHTGRAY;}
                     DrawLine(INITIAL_X_OFFSET, INITIAL_Y_OFFSET + j * SQUARE_SIZE, INITIAL_X_OFFSET + WIDTH * SQUARE_SIZE, INITIAL_Y_OFFSET + j * SQUARE_SIZE, linesColor);
                     DrawLine(INITIAL_X_OFFSET + j * SQUARE_SIZE, INITIAL_Y_OFFSET, INITIAL_X_OFFSET + j * SQUARE_SIZE, INITIAL_Y_OFFSET + HEIGHT * SQUARE_SIZE, linesColor);
-                    // DrawRectangleLines(INITIAL_X_OFFSET + j * SQUARE_SIZE, INITIAL_Y_OFFSET + i * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE, GREY);
                     char buffer[2];
-                    if(grille[i][j] != 0 && i < 9 && j < 9){
-                        DrawText(itoa(grille[i][j], buffer, 10), (INITIAL_X_OFFSET + 15) + j * SQUARE_SIZE, (INITIAL_Y_OFFSET + 10) + i * SQUARE_SIZE, 20, BLACK);
+                    if(sudokuGrid[i][j].digit != 0 && i < WIDTH && j < HEIGHT){
+                        DrawText(itoa(sudokuGrid[i][j].digit, buffer, 10), (INITIAL_X_OFFSET + 15) + j * SQUARE_SIZE, (INITIAL_Y_OFFSET + 10) + i * SQUARE_SIZE, 20, BLACK);
                     }
                 }
             }
