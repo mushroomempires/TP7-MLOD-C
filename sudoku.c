@@ -13,7 +13,7 @@
 #define WIDTH 9
 #define HEIGHT 9
 
-#define INITIAL_X_OFFSET 220
+#define INITIAL_X_OFFSET 370
 #define INITIAL_Y_OFFSET 120
 
 #define SQUARE_SIZE 40
@@ -32,10 +32,6 @@ typedef struct tile_st {
 //----------------------------------------------------------------------------------
 
 bool solver(sudokuTile sudokuGrid[HEIGHT][WIDTH], int i, int j);
-
-int generateIntBetween1And9(){
-    return (rand() % 9) + 1;
-}
 
 void shuffle(int *t, int l) {
   for (int j = 0; j < l; j++) {
@@ -160,8 +156,9 @@ int main(void)
 
     InitWindow(screenWidth, screenHeight, "Sudoku");
     sudokuTile sudokuGrid[HEIGHT][WIDTH];
-    initializeSudokuGrid(sudokuGrid);
+    initializeCompleteSudokuGrid(sudokuGrid);
     solver(sudokuGrid, 0, 0);
+
     SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
     //--------------------------------------------------------------------------------------
 
@@ -170,7 +167,7 @@ int main(void)
     {
         // Update
         //----------------------------------------------------------------------------------
-
+        
         // Draw
         //----------------------------------------------------------------------------------
         BeginDrawing();
