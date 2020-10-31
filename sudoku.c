@@ -31,10 +31,36 @@ typedef struct tile_st {
 // Functions
 //----------------------------------------------------------------------------------
 
-bool generateCompleteGrid(sudokuTile sudokuGrid[HEIGHT][WIDTH], int i, int j);
+bool solver(sudokuTile sudokuGrid[HEIGHT][WIDTH], int i, int j);
 
 int generateIntBetween1And9(){
     return (rand() % 9) + 1;
+}
+
+void shuffle(int *t, int l) {
+  for (int j = 0; j < l; j++) {
+      int tmp = t[j];
+      int p = rand()%l;
+      t[j] = t[p];
+      t[p] = tmp;
+  }
+}
+
+void initializeCompleteSudokuGrid(sudokuTile sudokuGrid[HEIGHT][WIDTH]){
+    for (unsigned int i = 0; i < HEIGHT; i++){
+        for (unsigned int j = 0; j < WIDTH; j++){             
+            sudokuGrid[i][j].isFixed = false;
+            sudokuGrid[i][j].isFilled = false;
+            sudokuGrid[i][j].digit = 0;
+        }
+    }
+    solver(sudokuGrid, 0, 0);
+    for (unsigned int i = 0; i < HEIGHT; i++){
+        for (unsigned int j = 0; j < WIDTH; j++){             
+            sudokuGrid[i][j].isFixed = true;
+            sudokuGrid[i][j].isFilled = true;
+        }
+    }
 }
 
 void initializeSudokuGrid(sudokuTile sudokuGrid[HEIGHT][WIDTH]){
@@ -98,26 +124,6 @@ bool canNumberBePlacedHere(int d, sudokuTile sudokuGrid[HEIGHT][WIDTH], int i, i
     return (isNotOnLine(d, sudokuGrid, j) && isNotOnColumn(d, sudokuGrid, i) && isNotInBox(d, sudokuGrid, i, j));
 }
 
-bool generateCompleteGrid(sudokuTile sudokuGrid[HEIGHT][WIDTH], int i, int j){
-    int randomInt = generateIntBetween1And9();
-    while(canNumberBePlacedHere(randomInt, sudokuGrid, i, j) != true){
-        randomInt = generateIntBetween1And9();
-    } 
-    sudokuGrid[i][j].isFilled = true;
-    sudokuGrid[i][j].isFixed = true;
-    sudokuGrid[i][j].digit = randomInt;
-    if(j == WIDTH - 1) { 
-        if(i == HEIGHT - 1) {
-            return true;
-                } else { if (generateCompleteGrid(sudokuGrid, i + 1, 0) == true) { return true;} } 
-            } else { if (generateCompleteGrid(sudokuGrid, i, j + 1) == true) {return true;}   
-        sudokuGrid[i][j].digit = 0; 
-        sudokuGrid[i][j].isFilled = false;
-        sudokuGrid[i][j].isFixed = false;
-        return false;
-    }
-}
-
 bool solver(sudokuTile sudokuGrid[HEIGHT][WIDTH], int i, int j) {
     if(sudokuGrid[i][j].isFixed == true) { // Checks if the number in this tile has been given from the start
         if(j == WIDTH - 1) { // Checks if the solver has reached the end of the line
@@ -126,10 +132,12 @@ bool solver(sudokuTile sudokuGrid[HEIGHT][WIDTH], int i, int j) {
             } else { return solver(sudokuGrid, i + 1, 0); } // If the solver has reached the end of the grid and no inconsistency was found, the grid is considered valid
         } else { return solver(sudokuGrid, i, j + 1);} // If the solver can access the following tile, it will try to solve it 
     } else { 
-        for(int d = 1; d <= 9; d++) {
-            if(canNumberBePlacedHere(d, sudokuGrid, i, j) == true) {
+        int array[9] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+        shuffle(array, 9);
+        for(int d = 0; d <= 8; d++) {
+            if(canNumberBePlacedHere(array[d], sudokuGrid, i, j) == true) {
                 sudokuGrid[i][j].isFilled = true;
-                sudokuGrid[i][j].digit = d;
+                sudokuGrid[i][j].digit = array[d];
                 if(j == WIDTH - 1) { // Once again, we have to check if the solver has reached the end of the line
                     if(i == HEIGHT - 1) { // Once again, we have to check if the solver has reached the end of the grid
                        return true;
