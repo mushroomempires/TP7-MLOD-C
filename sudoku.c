@@ -31,7 +31,13 @@ typedef struct tile_st {
 // Functions
 //----------------------------------------------------------------------------------
 
-void initializeSudoGrid(sudokuTile sudokuGrid[HEIGHT][WIDTH]){
+bool generateCompleteGrid(sudokuTile sudokuGrid[HEIGHT][WIDTH], int i, int j);
+
+int generateIntBetween1And9(){
+    return (rand() % 9) + 1;
+}
+
+void initializeSudokuGrid(sudokuTile sudokuGrid[HEIGHT][WIDTH]){
      int placeholderGrid[HEIGHT][WIDTH] = 
     {
         {0,1,6,0,0,0,7,0,9},
@@ -58,29 +64,29 @@ void initializeSudoGrid(sudokuTile sudokuGrid[HEIGHT][WIDTH]){
     }
 }
 
-bool isNotOnLine (int d, sudokuTile sudoTile[HEIGHT][WIDTH], int j){
+bool isNotOnLine (int d, sudokuTile sudokuGrid[HEIGHT][WIDTH], int j){
     for (int i = 0; i < HEIGHT; i++){ // Fixes which row of the grid is tested, varies the column number in order to test every single tile of the row
-        if (sudoTile[i][j].digit == d){
+        if (sudokuGrid[i][j].digit == d){
             return false;
         }
     }
     return true;
 }
 
-bool isNotOnColumn(int d, sudokuTile sudoTile[HEIGHT][WIDTH], int i){
+bool isNotOnColumn(int d, sudokuTile sudokuGrid[HEIGHT][WIDTH], int i){
     for (int j = 0; j < WIDTH; j++){ // Fixes which column of the grid is tested, varies the row number in order to test every single tile of the column
-        if (sudoTile[i][j].digit == d){
+        if (sudokuGrid[i][j].digit == d){
             return false;
         }
     }
     return true;
 }
 
-bool isNotInBox(int d, sudokuTile sudoTile[HEIGHT][WIDTH], int i, int j){
+bool isNotInBox(int d, sudokuTile sudokuGrid[HEIGHT][WIDTH], int i, int j){
     int i_box = i - (i % 3), j_box = j - (j % 3); // Identifies in which box the tested tile is, using modulos on its coordinates
     for (i = i_box; i < i_box + HEIGHT/3; i++){ // Checks in the box (which is a 3x3-sized square, hence the ranges for both width and height) if the value of the selected digit already exists there
         for (j = j_box; j < j_box + WIDTH/3; j++){
-            if(sudoTile[i][j].digit == d){
+            if(sudokuGrid[i][j].digit == d){
                 return false;
             }
         }
@@ -88,31 +94,51 @@ bool isNotInBox(int d, sudokuTile sudoTile[HEIGHT][WIDTH], int i, int j){
     return true;
 }
 
-bool canNumberBePlacedHere(int d, sudokuTile sudoTile[HEIGHT][WIDTH], int i, int j){
-    return (isNotOnLine(d, sudoTile, j) && isNotOnColumn(d, sudoTile, i) && isNotInBox(d, sudoTile, i, j));
+bool canNumberBePlacedHere(int d, sudokuTile sudokuGrid[HEIGHT][WIDTH], int i, int j){
+    return (isNotOnLine(d, sudokuGrid, j) && isNotOnColumn(d, sudokuGrid, i) && isNotInBox(d, sudokuGrid, i, j));
 }
 
-bool solver(sudokuTile sudoTile[HEIGHT][WIDTH], int i, int j) {
-    if(sudoTile[i][j].isFixed == true) { // Checks if the number in this tile has been given from the start
+bool generateCompleteGrid(sudokuTile sudokuGrid[HEIGHT][WIDTH], int i, int j){
+    int randomInt = generateIntBetween1And9();
+    while(canNumberBePlacedHere(randomInt, sudokuGrid, i, j) != true){
+        randomInt = generateIntBetween1And9();
+    } 
+    sudokuGrid[i][j].isFilled = true;
+    sudokuGrid[i][j].isFixed = true;
+    sudokuGrid[i][j].digit = randomInt;
+    if(j == WIDTH - 1) { 
+        if(i == HEIGHT - 1) {
+            return true;
+                } else { if (generateCompleteGrid(sudokuGrid, i + 1, 0) == true) { return true;} } 
+            } else { if (generateCompleteGrid(sudokuGrid, i, j + 1) == true) {return true;}   
+        sudokuGrid[i][j].digit = 0; 
+        sudokuGrid[i][j].isFilled = false;
+        sudokuGrid[i][j].isFixed = false;
+        return false;
+    }
+}
+
+bool solver(sudokuTile sudokuGrid[HEIGHT][WIDTH], int i, int j) {
+    if(sudokuGrid[i][j].isFixed == true) { // Checks if the number in this tile has been given from the start
         if(j == WIDTH - 1) { // Checks if the solver has reached the end of the line
             if (i == HEIGHT - 1) { // Checks if the solver has reached the end of the grid (if i = j = 8, there's no tile to check afterwards)
                 return true;
-            } else { return solver(sudoTile, i + 1, 0); } // If the solver has reached the end of the grid and no inconsistency was found, the grid is considered valid
-        } else { return solver(sudoTile, i, j + 1);} // If the solver can access the following tile, it will try to solve it 
+            } else { return solver(sudokuGrid, i + 1, 0); } // If the solver has reached the end of the grid and no inconsistency was found, the grid is considered valid
+        } else { return solver(sudokuGrid, i, j + 1);} // If the solver can access the following tile, it will try to solve it 
     } else { 
         for(int d = 1; d <= 9; d++) {
-            if(canNumberBePlacedHere(d, sudoTile, i, j) == true) {
-                sudoTile[i][j].isFilled = true;
-                sudoTile[i][j].digit = d;
+            if(canNumberBePlacedHere(d, sudokuGrid, i, j) == true) {
+                sudokuGrid[i][j].isFilled = true;
+                sudokuGrid[i][j].digit = d;
                 if(j == WIDTH - 1) { // Once again, we have to check if the solver has reached the end of the line
                     if(i == HEIGHT - 1) { // Once again, we have to check if the solver has reached the end of the grid
                        return true;
-                    } else { if (solver(sudoTile, i + 1, 0) == true) { return true;} } // Once again, if the solver has reached the end of the grid and no inconsistency was found, the grid is considered valid
-                } else { if (solver(sudoTile, i, j + 1) == true) {return true;} }   
+                    } else { if (solver(sudokuGrid, i + 1, 0) == true) { return true;} } // Once again, if the solver has reached the end of the grid and no inconsistency was found, the grid is considered valid
+                } else { if (solver(sudokuGrid, i, j + 1) == true) {return true;} }   
             }
         }
-        sudoTile[i][j].digit = 0; // If no digit fits in the grid, then the last value is systematically replaced with a 0 and the solver gets back to the last tile to correct any inconsistency
-        sudoTile[i][j].isFilled = false;
+        sudokuGrid[i][j].digit = 0; // If no digit fits in the grid, then the last value is systematically replaced with a 0 and the solver gets back to the last tile to correct any inconsistency
+        sudokuGrid[i][j].isFilled = false;
         return false;
     }
 }
@@ -126,8 +152,8 @@ int main(void)
 
     InitWindow(screenWidth, screenHeight, "Sudoku");
     sudokuTile sudokuGrid[HEIGHT][WIDTH];
-    initializeSudoGrid(sudokuGrid);
-
+    initializeSudokuGrid(sudokuGrid);
+    solver(sudokuGrid, 0, 0);
     SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
     //--------------------------------------------------------------------------------------
 
@@ -136,29 +162,27 @@ int main(void)
     {
         // Update
         //----------------------------------------------------------------------------------
-        solver(sudokuGrid, 0, 0);
+
         // Draw
         //----------------------------------------------------------------------------------
         BeginDrawing();
-        
-
             ClearBackground(RAYWHITE);
-            for(unsigned int i = 0; i < HEIGHT + 1; i++){
-                for(unsigned int j = 0; j < WIDTH + 1; j++){
-
+            for(unsigned int i = 0; i < HEIGHT; i++){
+                for(unsigned int j = 0; j < WIDTH; j++){
                     Color linesColor;
                     if (j % 3 == 0) {linesColor = BLACK;}
                     else {linesColor = LIGHTGRAY;}
                     DrawLine(INITIAL_X_OFFSET, INITIAL_Y_OFFSET + j * SQUARE_SIZE, INITIAL_X_OFFSET + WIDTH * SQUARE_SIZE, INITIAL_Y_OFFSET + j * SQUARE_SIZE, linesColor);
                     DrawLine(INITIAL_X_OFFSET + j * SQUARE_SIZE, INITIAL_Y_OFFSET, INITIAL_X_OFFSET + j * SQUARE_SIZE, INITIAL_Y_OFFSET + HEIGHT * SQUARE_SIZE, linesColor);
                     if((sudokuGrid[i][j].digit != 0) && (i != WIDTH) && (j != HEIGHT)){
-                        char buffer[4];
                         Color digitColor;
                         if (sudokuGrid[i][j].isFixed == true) {digitColor = BLACK;}
                         else {digitColor = BLUE;}
-                        DrawText(itoa(sudokuGrid[i][j].digit, buffer, 10), (INITIAL_X_OFFSET + 15) + j * SQUARE_SIZE, (INITIAL_Y_OFFSET + 10) + i * SQUARE_SIZE, 20, digitColor);
+                        DrawText(TextFormat("%d", sudokuGrid[i][j].digit), (INITIAL_X_OFFSET + 15) + j * SQUARE_SIZE, (INITIAL_Y_OFFSET + 10) + i * SQUARE_SIZE, 20, digitColor);
                     }
                 }
+                DrawLine(INITIAL_X_OFFSET, INITIAL_Y_OFFSET + 9 * SQUARE_SIZE, INITIAL_X_OFFSET + WIDTH * SQUARE_SIZE, INITIAL_Y_OFFSET + 9 * SQUARE_SIZE, BLACK);
+                DrawLine(INITIAL_X_OFFSET + 9 * SQUARE_SIZE, INITIAL_Y_OFFSET, INITIAL_X_OFFSET + 9 * SQUARE_SIZE, INITIAL_Y_OFFSET + HEIGHT * SQUARE_SIZE, BLACK);
             }
         EndDrawing();
         //----------------------------------------------------------------------------------
