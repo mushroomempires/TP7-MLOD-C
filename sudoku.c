@@ -13,10 +13,11 @@
 #define WIDTH 9
 #define HEIGHT 9
 
-#define INITIAL_X_OFFSET 370
+#define INITIAL_X_OFFSET 220
 #define INITIAL_Y_OFFSET 120
 
 #define SQUARE_SIZE 40
+
 
 //----------------------------------------------------------------------------------
 // Structures
@@ -32,6 +33,10 @@ typedef struct tile_st {
 //----------------------------------------------------------------------------------
 
 bool solver(sudokuTile sudokuGrid[HEIGHT][WIDTH], int i, int j);
+
+int generateIntInARange(int lower, int upper){
+    return (rand() % (upper - lower + 1) + lower);
+}
 
 void shuffle(int *t, int l) {
   for (int j = 0; j < l; j++) {
@@ -59,29 +64,33 @@ void initializeCompleteSudokuGrid(sudokuTile sudokuGrid[HEIGHT][WIDTH]){
     }
 }
 
-void initializeSudokuGrid(sudokuTile sudokuGrid[HEIGHT][WIDTH]){
-     int placeholderGrid[HEIGHT][WIDTH] = 
-    {
-        {0,1,6,0,0,0,7,0,9},
-        {0,9,3,8,0,6,0,0,0},
-        {0,0,0,0,9,0,2,8,0},
-        {9,0,0,0,3,2,0,5,4},
-        {0,0,5,0,0,9,0,0,1},
-        {3,2,0,6,0,5,8,9,7},
-        {4,0,8,9,0,7,0,6,2},
-        {7,0,0,0,5,0,0,0,0},
-        {0,5,2,0,6,0,0,0,0}
+void createSudokuGridFromCompleteGrid(sudokuTile sudokuGrid[HEIGHT][WIDTH], int difficultyLevel){
+    int numberOfTilePairsToRemove;
+     switch(difficultyLevel) {
+      case 1 :
+        numberOfTilePairsToRemove = generateIntInARange(21,23);
+        break;
+      case 2 :
+        numberOfTilePairsToRemove = generateIntInARange(23,25);
+        break;
+      case 3 :
+         numberOfTilePairsToRemove = generateIntInARange(25,27);
+         break;
+      case 4 :
+         numberOfTilePairsToRemove = generateIntInARange(27,29);
+         break;
     };
-    for (unsigned int i = 0; i < HEIGHT; i++){
-        for (unsigned int j = 0; j < WIDTH; j++){
-            sudokuGrid[i][j].digit = placeholderGrid[i][j];
-            if(sudokuGrid[i][j].digit != 0){
-                sudokuGrid[i][j].isFixed = true;
-                sudokuGrid[i][j].isFilled = true;
-            } else {
-                sudokuGrid[i][j].isFixed = false;
-                sudokuGrid[i][j].isFilled = false;
-            }
+    for (unsigned int counter = 0; counter < numberOfTilePairsToRemove; counter++){
+        int rand_i = generateIntInARange(0, HEIGHT - 1), rand_j = generateIntInARange(0, WIDTH - 1);
+        if (sudokuGrid[rand_i][rand_j].isFilled == false){
+            counter--;
+        } else {
+            sudokuGrid[rand_i][rand_j].digit = 0;
+            sudokuGrid[rand_i][rand_j].isFilled = false;
+            sudokuGrid[rand_i][rand_j].isFixed = false;
+            sudokuGrid[(HEIGHT - 1) - rand_i][(WIDTH - 1) - rand_j].digit = 0;
+            sudokuGrid[(HEIGHT - 1) - rand_i][(WIDTH - 1) - rand_j].isFilled = false;
+            sudokuGrid[(HEIGHT - 1) - rand_i][(WIDTH - 1) - rand_j].isFixed = false;
         }
     }
 }
@@ -157,7 +166,8 @@ int main(void)
     InitWindow(screenWidth, screenHeight, "Sudoku");
     sudokuTile sudokuGrid[HEIGHT][WIDTH];
     initializeCompleteSudokuGrid(sudokuGrid);
-    solver(sudokuGrid, 0, 0);
+    createSudokuGridFromCompleteGrid(sudokuGrid, 4);
+    // solver(sudokuGrid, 0, 0);
 
     SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
     //--------------------------------------------------------------------------------------
@@ -183,7 +193,7 @@ int main(void)
                         Color digitColor;
                         if (sudokuGrid[i][j].isFixed == true) {digitColor = BLACK;}
                         else {digitColor = BLUE;}
-                        DrawText(TextFormat("%d", sudokuGrid[i][j].digit), (INITIAL_X_OFFSET + 15) + j * SQUARE_SIZE, (INITIAL_Y_OFFSET + 10) + i * SQUARE_SIZE, 20, digitColor);
+                        DrawText(TextFormat("%d", sudokuGrid[i][j].digit), (INITIAL_X_OFFSET + 15) + j * SQUARE_SIZE, (INITIAL_Y_OFFSET + 10) + i * SQUARE_SIZE, SQUARE_SIZE/2, digitColor);
                     }
                 }
                 DrawLine(INITIAL_X_OFFSET, INITIAL_Y_OFFSET + 9 * SQUARE_SIZE, INITIAL_X_OFFSET + WIDTH * SQUARE_SIZE, INITIAL_Y_OFFSET + 9 * SQUARE_SIZE, BLACK);
