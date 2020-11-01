@@ -47,6 +47,15 @@ void shuffle(int *t, int l) {
   }
 }
 
+void initializeEmptySudokuGrid(sudokuTile sudokuGrid[HEIGHT][WIDTH]){
+       for (unsigned int i = 0; i < HEIGHT; i++){
+        for (unsigned int j = 0; j < WIDTH; j++){             
+            sudokuGrid[i][j].isFixed = false;
+            sudokuGrid[i][j].isFilled = false;
+            sudokuGrid[i][j].digit = 0;
+        }
+    } 
+}
 void initializeCompleteSudokuGrid(sudokuTile sudokuGrid[HEIGHT][WIDTH]){
     for (unsigned int i = 0; i < HEIGHT; i++){
         for (unsigned int j = 0; j < WIDTH; j++){             
@@ -78,6 +87,8 @@ void createSudokuGridFromCompleteGrid(sudokuTile sudokuGrid[HEIGHT][WIDTH], int 
          break;
       case 4 :
          numberOfTilePairsToRemove = generateIntInARange(27,29);
+         break;
+      default : 
          break;
     };
     for (unsigned int counter = 0; counter < numberOfTilePairsToRemove; counter++){
@@ -165,9 +176,7 @@ int main(void)
 
     InitWindow(screenWidth, screenHeight, "Sudoku");
     sudokuTile sudokuGrid[HEIGHT][WIDTH];
-    initializeCompleteSudokuGrid(sudokuGrid);
-    createSudokuGridFromCompleteGrid(sudokuGrid, 4);
-    // solver(sudokuGrid, 0, 0);
+    initializeEmptySudokuGrid(sudokuGrid);
 
     SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
     //--------------------------------------------------------------------------------------
@@ -177,7 +186,11 @@ int main(void)
     {
         // Update
         //----------------------------------------------------------------------------------
-        
+        if (IsKeyPressed(83)){  solver(sudokuGrid, 0, 0); }
+        if (IsKeyPressed(49)){  initializeCompleteSudokuGrid(sudokuGrid); createSudokuGridFromCompleteGrid(sudokuGrid, 1);}  
+        if (IsKeyPressed(50)){  initializeCompleteSudokuGrid(sudokuGrid); createSudokuGridFromCompleteGrid(sudokuGrid, 2);}  
+        if (IsKeyPressed(51)){  initializeCompleteSudokuGrid(sudokuGrid); createSudokuGridFromCompleteGrid(sudokuGrid, 3);}     
+        if (IsKeyPressed(52)){  initializeCompleteSudokuGrid(sudokuGrid); createSudokuGridFromCompleteGrid(sudokuGrid, 4);}  
         // Draw
         //----------------------------------------------------------------------------------
         BeginDrawing();
@@ -187,6 +200,11 @@ int main(void)
                     Color linesColor;
                     if (j % 3 == 0) {linesColor = BLACK;}
                     else {linesColor = LIGHTGRAY;}
+                    DrawText("Press 1 for easy mode.", 20, 20, 20, LIGHTGRAY);                   
+                    DrawText("Press 2 for medium mode.", 270, 20, 20, LIGHTGRAY);
+                    DrawText("Press 3 for hard mode.", 20, 50, 20, LIGHTGRAY);
+                    DrawText("Press 4 for very hard mode.", 270, 50, 20, LIGHTGRAY);
+                    DrawText("Press S for the solution.", 20, 560, 20, LIGHTGRAY);
                     DrawLine(INITIAL_X_OFFSET, INITIAL_Y_OFFSET + j * SQUARE_SIZE, INITIAL_X_OFFSET + WIDTH * SQUARE_SIZE, INITIAL_Y_OFFSET + j * SQUARE_SIZE, linesColor);
                     DrawLine(INITIAL_X_OFFSET + j * SQUARE_SIZE, INITIAL_Y_OFFSET, INITIAL_X_OFFSET + j * SQUARE_SIZE, INITIAL_Y_OFFSET + HEIGHT * SQUARE_SIZE, linesColor);
                     if((sudokuGrid[i][j].digit != 0) && (i != WIDTH) && (j != HEIGHT)){
