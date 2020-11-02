@@ -8,6 +8,9 @@ Ce dépôt contient ainsi un générateur de grille de sudoku selon quatre nivea
 
 # Informations de compilation et de test
 La compilation s'effectue avec la commande suivante :
-gcc -o sudoku.exe sudoku.c -s -static -Os -std=c16 -Wall -Iexternal -DPLATFORM_DESKTOP -lraylib -lopengl32 -lgdi32 -lwinmm -L lib/ -I include/
+gcc -o sudoku.exe sudoku.c -s -static -Os -std=c11 -Wall -Iexternal -DPLATFORM_DESKTOP -lraylib -lopengl32 -lgdi32 -lwinmm -L lib/ -I include/
 
 puis en lançant l'application "sudoku.exe" ainsi créée.
+
+#Vidéo de présentation du projet
+https://youtu.be/VKEjRWHTPa0

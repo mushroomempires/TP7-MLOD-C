@@ -179,7 +179,7 @@ bool solver(sudokuTile sudokuGrid[HEIGHT][WIDTH], int i, int j) {
 	return true;
 }
 
-void unsolver(sudokuTile sudokuGrid[HEIGHT][WIDTH]) {	
+void unsolver(sudokuTile sudokuGrid[HEIGHT][WIDTH]) {
 	if(sudokuGrid[0][0].isSolved == true) {
 		for(unsigned int i = 0; i < HEIGHT; i++){
 			for(unsigned int j = 0; j < WIDTH; j++){
@@ -191,7 +191,7 @@ void unsolver(sudokuTile sudokuGrid[HEIGHT][WIDTH]) {
 		}
 		sudokuGrid[0][0].isSolved = false;
 	}
-} 
+}
 
 int main(void)
 {
@@ -211,7 +211,7 @@ int main(void)
     while (!WindowShouldClose())    // Detect window close button or ESC key
     {
         // Update
-        //----------------------------------------------------------------------------------		
+        //----------------------------------------------------------------------------------
         if (IsKeyPressed('U')){  unsolver(sudokuGrid);}
         if (IsKeyPressed('S')){  solver(sudokuGrid, 0, 0); sudokuGrid[0][0].isSolved = true;}
         if (IsKeyPressed('1')){  initializeCompleteSudokuGrid(sudokuGrid); createSudokuGridFromCompleteGrid(sudokuGrid, GAMEMODE_EASY);}
