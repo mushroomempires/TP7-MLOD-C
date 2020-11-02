@@ -1,5 +1,5 @@
-#include "raylib.h"
 
+#include <raylib.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -26,6 +26,7 @@
 //----------------------------------------------------------------------------------
 // Structures
 //----------------------------------------------------------------------------------
+
 typedef struct tile_st {
    bool isFilled;
    bool isFixed;
@@ -54,18 +55,18 @@ void shuffle(int *t, int l) {
 
 void initializeEmptySudokuGrid(sudokuTile sudokuGrid[HEIGHT][WIDTH]){
        for (unsigned int i = 0; i < HEIGHT; i++){
-        for (unsigned int j = 0; j < WIDTH; j++){             
+        for (unsigned int j = 0; j < WIDTH; j++){
             sudokuGrid[i][j].isFixed = false;
             sudokuGrid[i][j].isFilled = false;
             sudokuGrid[i][j].digit = 0;
 			sudokuGrid[i][j].isSolved = false;
         }
-    } 
+    }
 }
 
 void initializeCompleteSudokuGrid(sudokuTile sudokuGrid[HEIGHT][WIDTH]){
     for (unsigned int i = 0; i < HEIGHT; i++){
-        for (unsigned int j = 0; j < WIDTH; j++){             
+        for (unsigned int j = 0; j < WIDTH; j++){
             sudokuGrid[i][j].isFixed = false;
             sudokuGrid[i][j].isFilled = false;
             sudokuGrid[i][j].digit = 0;
@@ -74,7 +75,7 @@ void initializeCompleteSudokuGrid(sudokuTile sudokuGrid[HEIGHT][WIDTH]){
     }
     solver(sudokuGrid, 0, 0);
     for (unsigned int i = 0; i < HEIGHT; i++){
-        for (unsigned int j = 0; j < WIDTH; j++){             
+        for (unsigned int j = 0; j < WIDTH; j++){
             sudokuGrid[i][j].isFixed = true;
             sudokuGrid[i][j].isFilled = true;
         }
@@ -82,21 +83,21 @@ void initializeCompleteSudokuGrid(sudokuTile sudokuGrid[HEIGHT][WIDTH]){
 }
 
 void createSudokuGridFromCompleteGrid(sudokuTile sudokuGrid[HEIGHT][WIDTH], int difficultyLevel){
-    int numberOfTilePairsToRemove;
+    int numberOfTilePairsToRemove = 0;
      switch(difficultyLevel) {
-      case 1 :
-        numberOfTilePairsToRemove = generateIntInARange(21,23);
+      case GAMEMODE_EASY :
+        numberOfTilePairsToRemove = generateIntInARange(21,22);
         break;
-      case 2 :
-        numberOfTilePairsToRemove = generateIntInARange(23,25);
+      case GAMEMODE_MEDIUM :
+        numberOfTilePairsToRemove = generateIntInARange(23,24);
         break;
-      case 3 :
-         numberOfTilePairsToRemove = generateIntInARange(25,27);
+      case GAMEMODE_HARD :
+         numberOfTilePairsToRemove = generateIntInARange(26,27);
          break;
-      case 4 :
-         numberOfTilePairsToRemove = generateIntInARange(27,29);
+      case GAMEMODE_VERY_HARD :
+         numberOfTilePairsToRemove = generateIntInARange(28,30);
          break;
-      default : 
+      default :
          break;
     };
     for (unsigned int counter = 0; counter < numberOfTilePairsToRemove; counter++){
@@ -155,8 +156,8 @@ bool solver(sudokuTile sudokuGrid[HEIGHT][WIDTH], int i, int j) {
 				if (i == HEIGHT - 1) { // Checks if the solver has reached the end of the grid (if i = j = 8, there's no tile to check afterwards)
 					return true;
 				} else { return solver(sudokuGrid, i + 1, 0); } // If the solver has reached the end of the grid and no inconsistency was found, the grid is considered valid
-			} else { return solver(sudokuGrid, i, j + 1);} // If the solver can access the following tile, it will try to solve it 
-		} else { 
+			} else { return solver(sudokuGrid, i, j + 1);} // If the solver can access the following tile, it will try to solve it
+		} else {
 			int array[9] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
 			shuffle(array, 9);
 			for(int d = 0; d <= 8; d++) {
@@ -167,7 +168,7 @@ bool solver(sudokuTile sudokuGrid[HEIGHT][WIDTH], int i, int j) {
 						if(i == HEIGHT - 1) { // Once again, we have to check if the solver has reached the end of the grid
 							return true;
 						} else { if (solver(sudokuGrid, i + 1, 0) == true) { return true;} } // Once again, if the solver has reached the end of the grid and no inconsistency was found, the grid is considered valid
-					} else { if (solver(sudokuGrid, i, j + 1) == true) {return true;} }   
+					} else { if (solver(sudokuGrid, i, j + 1) == true) {return true;} }
 				}
 			}
 			sudokuGrid[i][j].digit = 0; // If no digit fits in the grid, then the last value is systematically replaced with a 0 and the solver gets back to the last tile to correct any inconsistency
@@ -175,7 +176,22 @@ bool solver(sudokuTile sudokuGrid[HEIGHT][WIDTH], int i, int j) {
 			return false;
 		}
     }
+	return true;
 }
+
+void unsolver(sudokuTile sudokuGrid[HEIGHT][WIDTH]) {	
+	if(sudokuGrid[0][0].isSolved == true) {
+		for(unsigned int i = 0; i < HEIGHT; i++){
+			for(unsigned int j = 0; j < WIDTH; j++){
+				if(sudokuGrid[i][j].isFixed == false){
+					sudokuGrid[i][j].digit = 0;
+					sudokuGrid[i][j].isFilled = false;
+				}
+			}
+		}
+		sudokuGrid[0][0].isSolved = false;
+	}
+} 
 
 int main(void)
 {
@@ -184,7 +200,7 @@ int main(void)
     const int screenWidth = 800;
     const int screenHeight = 600;
 
-    InitWindow(screenWidth, screenHeight, "Sudoku");
+    InitWindow(screenWidth, screenHeight, "Sudoku Generator & Solver");
     sudokuTile sudokuGrid[HEIGHT][WIDTH];
     initializeEmptySudokuGrid(sudokuGrid);
 
@@ -195,12 +211,13 @@ int main(void)
     while (!WindowShouldClose())    // Detect window close button or ESC key
     {
         // Update
-        //----------------------------------------------------------------------------------
+        //----------------------------------------------------------------------------------		
+        if (IsKeyPressed('U')){  unsolver(sudokuGrid);}
         if (IsKeyPressed('S')){  solver(sudokuGrid, 0, 0); sudokuGrid[0][0].isSolved = true;}
-        if (IsKeyPressed('1')){  initializeCompleteSudokuGrid(sudokuGrid); createSudokuGridFromCompleteGrid(sudokuGrid, GAMEMODE_EASY);}  
-        if (IsKeyPressed('2')){  initializeCompleteSudokuGrid(sudokuGrid); createSudokuGridFromCompleteGrid(sudokuGrid, GAMEMODE_MEDIUM);}  
-        if (IsKeyPressed('3')){  initializeCompleteSudokuGrid(sudokuGrid); createSudokuGridFromCompleteGrid(sudokuGrid, GAMEMODE_HARD);}     
-        if (IsKeyPressed('4')){  initializeCompleteSudokuGrid(sudokuGrid); createSudokuGridFromCompleteGrid(sudokuGrid, GAMEMODE_VERY_HARD);}  
+        if (IsKeyPressed('1')){  initializeCompleteSudokuGrid(sudokuGrid); createSudokuGridFromCompleteGrid(sudokuGrid, GAMEMODE_EASY);}
+        if (IsKeyPressed('2')){  initializeCompleteSudokuGrid(sudokuGrid); createSudokuGridFromCompleteGrid(sudokuGrid, GAMEMODE_MEDIUM);}
+        if (IsKeyPressed('3')){  initializeCompleteSudokuGrid(sudokuGrid); createSudokuGridFromCompleteGrid(sudokuGrid, GAMEMODE_HARD);}
+        if (IsKeyPressed('4')){  initializeCompleteSudokuGrid(sudokuGrid); createSudokuGridFromCompleteGrid(sudokuGrid, GAMEMODE_VERY_HARD);}
         // Draw
         //----------------------------------------------------------------------------------
         BeginDrawing();
@@ -210,11 +227,12 @@ int main(void)
                     Color linesColor;
                     if (j % 3 == 0) {linesColor = BLACK;}
                     else {linesColor = LIGHTGRAY;}
-                    DrawText("Press 1 for easy mode.", 20, 20, 20, LIGHTGRAY);                   
-                    DrawText("Press 2 for medium mode.", 270, 20, 20, LIGHTGRAY);
-                    DrawText("Press 3 for hard mode.", 20, 50, 20, LIGHTGRAY);
-                    DrawText("Press 4 for very hard mode.", 270, 50, 20, LIGHTGRAY);
-                    DrawText("Press S for the solution.", 20, 560, 20, LIGHTGRAY);
+                    DrawText("Press 1 for easy mode.", 20, 20, SQUARE_SIZE/2, LIGHTGRAY);
+                    DrawText("Press 2 for medium mode.", 270, 20, SQUARE_SIZE/2, LIGHTGRAY);
+                    DrawText("Press 3 for hard mode.", 20, 50, SQUARE_SIZE/2, LIGHTGRAY);
+                    DrawText("Press 4 for very hard mode.", 270, 50, SQUARE_SIZE/2, LIGHTGRAY);
+                    DrawText("Press S to get the solution.", 20, 560, SQUARE_SIZE/2, LIGHTGRAY);
+                    DrawText("Press U to hide the solution.", 320, 560, SQUARE_SIZE/2, LIGHTGRAY);
                     DrawLine(INITIAL_X_OFFSET, INITIAL_Y_OFFSET + j * SQUARE_SIZE, INITIAL_X_OFFSET + WIDTH * SQUARE_SIZE, INITIAL_Y_OFFSET + j * SQUARE_SIZE, linesColor);
                     DrawLine(INITIAL_X_OFFSET + j * SQUARE_SIZE, INITIAL_Y_OFFSET, INITIAL_X_OFFSET + j * SQUARE_SIZE, INITIAL_Y_OFFSET + HEIGHT * SQUARE_SIZE, linesColor);
                     if((sudokuGrid[i][j].digit != 0) && (i != WIDTH) && (j != HEIGHT)){
