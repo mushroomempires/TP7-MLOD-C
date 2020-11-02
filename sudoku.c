@@ -18,6 +18,10 @@
 
 #define SQUARE_SIZE 40
 
+#define GAMEMODE_EASY 1
+#define GAMEMODE_MEDIUM 2
+#define GAMEMODE_HARD 3
+#define GAMEMODE_VERY_HARD 4
 
 //----------------------------------------------------------------------------------
 // Structures
@@ -58,6 +62,7 @@ void initializeEmptySudokuGrid(sudokuTile sudokuGrid[HEIGHT][WIDTH]){
         }
     } 
 }
+
 void initializeCompleteSudokuGrid(sudokuTile sudokuGrid[HEIGHT][WIDTH]){
     for (unsigned int i = 0; i < HEIGHT; i++){
         for (unsigned int j = 0; j < WIDTH; j++){             
@@ -191,11 +196,11 @@ int main(void)
     {
         // Update
         //----------------------------------------------------------------------------------
-        if (IsKeyPressed(83)){  solver(sudokuGrid, 0, 0); sudokuGrid[0][0].isSolved = true;}
-        if (IsKeyPressed(49)){  initializeCompleteSudokuGrid(sudokuGrid); createSudokuGridFromCompleteGrid(sudokuGrid, 1);}  
-        if (IsKeyPressed(50)){  initializeCompleteSudokuGrid(sudokuGrid); createSudokuGridFromCompleteGrid(sudokuGrid, 2);}  
-        if (IsKeyPressed(51)){  initializeCompleteSudokuGrid(sudokuGrid); createSudokuGridFromCompleteGrid(sudokuGrid, 3);}     
-        if (IsKeyPressed(52)){  initializeCompleteSudokuGrid(sudokuGrid); createSudokuGridFromCompleteGrid(sudokuGrid, 4);}  
+        if (IsKeyPressed('S')){  solver(sudokuGrid, 0, 0); sudokuGrid[0][0].isSolved = true;}
+        if (IsKeyPressed('1')){  initializeCompleteSudokuGrid(sudokuGrid); createSudokuGridFromCompleteGrid(sudokuGrid, GAMEMODE_EASY);}  
+        if (IsKeyPressed('2')){  initializeCompleteSudokuGrid(sudokuGrid); createSudokuGridFromCompleteGrid(sudokuGrid, GAMEMODE_MEDIUM);}  
+        if (IsKeyPressed('3')){  initializeCompleteSudokuGrid(sudokuGrid); createSudokuGridFromCompleteGrid(sudokuGrid, GAMEMODE_HARD);}     
+        if (IsKeyPressed('4')){  initializeCompleteSudokuGrid(sudokuGrid); createSudokuGridFromCompleteGrid(sudokuGrid, GAMEMODE_VERY_HARD);}  
         // Draw
         //----------------------------------------------------------------------------------
         BeginDrawing();
